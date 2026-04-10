@@ -1,0 +1,246 @@
+
+DROP TABLE IF EXISTS product_categories CASCADE;
+CREATE TABLE product_categories(
+	category_id SERIAL PRIMARY KEY,
+	category_name VARCHAR(225) NOT NULL UNIQUE
+);
+
+DROP TABLE IF EXISTS suppliers CASCADE;
+CREATE TABLE suppliers( 
+	supplier_id SERIAL PRIMARY KEY,
+	supplier_name VARCHAR(225) NOT NULL,
+	contact_inf VARCHAR(225)
+);
+
+DROP TABLE IF EXISTS promotions CASCADE;
+CREATE TABLE promotions ( 
+	promo_id SERIAL PRIMARY KEY,
+	promo_name VARCHAR(225) NOT NULL,
+	MO_TA TEXT,
+	discount_percent DECIMAL(5,2),
+	start_date DATE NOT NULL,
+	end_date DATE NOT NULL
+);
+
+DROP TABLE IF EXISTS employees CASCADE;
+CREATE TABLE employees (
+	employee_id SERIAL PRIMARY KEY,
+	employee_name VARCHAR(225) NOT NULL,
+	Vi_Tri_CV VARCHAR(225) NOT NULL,
+	hire_date DATE
+);
+
+DROP TABLE IF EXISTS customers CASCADE;
+CREATE TABLE customers(
+	customer_id SERIAL PRIMARY KEY,
+	customer_name VARCHAR(225) NOT NULL,
+	phone VARCHAR(20) UNIQUE,
+	email VARCHAR(225) UNIQUE,
+	address TEXT
+);
+
+DROP TABLE IF EXISTS products CASCADE;
+CREATE TABLE products (
+	product_id SERIAL PRIMARY KEY,
+	product_name VARCHAR(250) NOT NULL,
+	price DECIMAL(15,2) NOT NULL,
+	category_id INT REFERENCES product_categories(category_id) ON DELETE SET NULL, -- Bổ sung Khóa ngoại
+	supplier_id INT REFERENCES suppliers(supplier_id) ON DELETE SET NULL        -- Bổ sung Khóa ngoại
+);
+
+DROP TABLE IF EXISTS orders CASCADE;
+CREATE TABLE orders(
+	order_id SERIAL PRIMARY KEY,
+	customer_id INT NOT NULL REFERENCES customers(customer_id) ON DELETE CASCADE,   -- Bổ sung Khóa ngoại
+	employee_id INT NOT NULL REFERENCES employees(employee_id) ON DELETE RESTRICT,  -- Bổ sung Khóa ngoại
+	promo_id INT REFERENCES promotions(promo_id) ON DELETE SET NULL,                -- Bổ sung Khóa ngoại
+	order_date DATE DEFAULT CURRENT_DATE
+);
+
+DROP TABLE IF EXISTS order_items CASCADE;
+CREATE TABLE order_items (
+	order_item_id SERIAL PRIMARY KEY,
+	order_id INT NOT NULL REFERENCES orders(order_id) ON DELETE CASCADE,       -- Bổ sung Khóa ngoại
+	product_id INT NOT NULL REFERENCES products(product_id) ON DELETE RESTRICT,-- Bổ sung Khóa ngoại
+	quantity INT NOT NULL CHECK (quantity > 0),
+	price_at_purchase DECIMAL(15,2) NOT NULL CHECK(price_at_purchase >= 0)
+);
+
+-- 1. Thêm 5 danh mục (product_categories)
+INSERT INTO product_categories (category_id, category_name) VALUES
+(1, 'Điện tử'),
+(2, 'Thời trang'),
+(3, 'Gia dụng'),
+(4, 'Thể thao'),
+(5, 'Sách');
+
+-- 2. Thêm 5 nhà cung cấp (suppliers)
+INSERT INTO suppliers (supplier_id, supplier_name, contact_inf) VALUES
+(1, 'TechVN', 'techvn@contact.com - 0901000001'),
+(2, 'May Mặc ABC', 'abc@contact.com - 0901000002'),
+(3, 'SmartLife', 'smartlife@contact.com - 0901000003'),
+(4, 'Sporting Goods', 'sport@contact.com - 0901000004'),
+(5, 'NXB Tri Thức', 'trithuc@contact.com - 0901000005');
+
+-- 3. Thêm 3 chương trình khuyến mãi (promotions)
+INSERT INTO promotions (promo_id, promo_name, MO_TA, discount_percent, start_date, end_date) VALUES
+(1, 'Không khuyến mãi', 'Giá gốc', 0.00, '2023-01-01', '2099-12-31'),
+(2, 'Sale Mùa Hè', 'Giảm giá mùa hè', 15.00, '2023-06-01', '2023-08-31'),
+(3, 'Black Friday', 'Thứ 6 đen tối', 30.00, '2023-11-20', '2023-11-30');
+
+-- 4. Thêm 10 nhân viên (employees)
+INSERT INTO employees (employee_id, employee_name, Vi_Tri_CV, hire_date) VALUES
+(1, 'Nguyễn Văn An', 'Bán hàng', '2022-01-10'), (2, 'Trần Thị Bình', 'Bán hàng', '2022-02-15'),
+(3, 'Lê Hoàng Cường', 'Thu ngân', '2022-03-20'), (4, 'Phạm Mỹ Dung', 'Thu ngân', '2022-04-25'),
+(5, 'Hoàng Trọng Ân', 'Quản lý', '2021-05-10'), (6, 'Đỗ Tuấn Phong', 'Bán hàng', '2022-06-05'),
+(7, 'Vũ Thị Hoa', 'Bán hàng', '2022-07-12'), (8, 'Bùi Văn Tiến', 'CSKH', '2022-08-18'),
+(9, 'Đặng Mai Lan', 'Kho', '2022-09-22'), (10, 'Ngô Quang Huy', 'Nhân sự', '2021-10-30');
+
+-- 5. Thêm 50 khách hàng (customers) - Đảm bảo phone và email UNIQUE
+INSERT INTO customers (customer_id, customer_name, phone, email, address) VALUES
+(1, 'Khách hàng 1', '0900000001', 'kh1@mail.com', 'Hà Nội'), (2, 'Khách hàng 2', '0900000002', 'kh2@mail.com', 'HCM'),
+(3, 'Khách hàng 3', '0900000003', 'kh3@mail.com', 'Đà Nẵng'), (4, 'Khách hàng 4', '0900000004', 'kh4@mail.com', 'Hải Phòng'),
+(5, 'Khách hàng 5', '0900000005', 'kh5@mail.com', 'Cần Thơ'), (6, 'Khách hàng 6', '0900000006', 'kh6@mail.com', 'Hà Nội'),
+(7, 'Khách hàng 7', '0900000007', 'kh7@mail.com', 'HCM'), (8, 'Khách hàng 8', '0900000008', 'kh8@mail.com', 'Hà Nội'),
+(9, 'Khách hàng 9', '0900000009', 'kh9@mail.com', 'Đà Nẵng'), (10, 'Khách hàng 10', '0900000010', 'kh10@mail.com', 'HCM'),
+(11, 'Khách hàng 11', '0900000011', 'kh11@mail.com', 'Hà Nội'), (12, 'Khách hàng 12', '0900000012', 'kh12@mail.com', 'HCM'),
+(13, 'Khách hàng 13', '0900000013', 'kh13@mail.com', 'Đà Nẵng'), (14, 'Khách hàng 14', '0900000014', 'kh14@mail.com', 'Hải Phòng'),
+(15, 'Khách hàng 15', '0900000015', 'kh15@mail.com', 'Cần Thơ'), (16, 'Khách hàng 16', '0900000016', 'kh16@mail.com', 'Hà Nội'),
+(17, 'Khách hàng 17', '0900000017', 'kh17@mail.com', 'HCM'), (18, 'Khách hàng 18', '0900000018', 'kh18@mail.com', 'Hà Nội'),
+(19, 'Khách hàng 19', '0900000019', 'kh19@mail.com', 'Đà Nẵng'), (20, 'Khách hàng 20', '0900000020', 'kh20@mail.com', 'HCM'),
+(21, 'Khách hàng 21', '0900000021', 'kh21@mail.com', 'Hà Nội'), (22, 'Khách hàng 22', '0900000022', 'kh22@mail.com', 'HCM'),
+(23, 'Khách hàng 23', '0900000023', 'kh23@mail.com', 'Đà Nẵng'), (24, 'Khách hàng 24', '0900000024', 'kh24@mail.com', 'Hải Phòng'),
+(25, 'Khách hàng 25', '0900000025', 'kh25@mail.com', 'Cần Thơ'), (26, 'Khách hàng 26', '0900000026', 'kh26@mail.com', 'Hà Nội'),
+(27, 'Khách hàng 27', '0900000027', 'kh27@mail.com', 'HCM'), (28, 'Khách hàng 28', '0900000028', 'kh28@mail.com', 'Hà Nội'),
+(29, 'Khách hàng 29', '0900000029', 'kh29@mail.com', 'Đà Nẵng'), (30, 'Khách hàng 30', '0900000030', 'kh30@mail.com', 'HCM'),
+(31, 'Khách hàng 31', '0900000031', 'kh31@mail.com', 'Hà Nội'), (32, 'Khách hàng 32', '0900000032', 'kh32@mail.com', 'HCM'),
+(33, 'Khách hàng 33', '0900000033', 'kh33@mail.com', 'Đà Nẵng'), (34, 'Khách hàng 34', '0900000034', 'kh34@mail.com', 'Hải Phòng'),
+(35, 'Khách hàng 35', '0900000035', 'kh35@mail.com', 'Cần Thơ'), (36, 'Khách hàng 36', '0900000036', 'kh36@mail.com', 'Hà Nội'),
+(37, 'Khách hàng 37', '0900000037', 'kh37@mail.com', 'HCM'), (38, 'Khách hàng 38', '0900000038', 'kh38@mail.com', 'Hà Nội'),
+(39, 'Khách hàng 39', '0900000039', 'kh39@mail.com', 'Đà Nẵng'), (40, 'Khách hàng 40', '0900000040', 'kh40@mail.com', 'HCM'),
+(41, 'Khách hàng 41', '0900000041', 'kh41@mail.com', 'Hà Nội'), (42, 'Khách hàng 42', '0900000042', 'kh42@mail.com', 'HCM'),
+(43, 'Khách hàng 43', '0900000043', 'kh43@mail.com', 'Đà Nẵng'), (44, 'Khách hàng 44', '0900000044', 'kh44@mail.com', 'Hải Phòng'),
+(45, 'Khách hàng 45', '0900000045', 'kh45@mail.com', 'Cần Thơ'), (46, 'Khách hàng 46', '0900000046', 'kh46@mail.com', 'Hà Nội'),
+(47, 'Khách hàng 47', '0900000047', 'kh47@mail.com', 'HCM'), (48, 'Khách hàng 48', '0900000048', 'kh48@mail.com', 'Hà Nội'),
+(49, 'Khách hàng 49', '0900000049', 'kh49@mail.com', 'Đà Nẵng'), (50, 'Khách hàng 50', '0900000050', 'kh50@mail.com', 'HCM');
+
+-- 6. Thêm 30 sản phẩm (products)
+INSERT INTO products (product_id, product_name, price, category_id, supplier_id) VALUES
+(1, 'Điện thoại X', 15000000.00, 1, 1), (2, 'Laptop Y', 25000000.00, 1, 1), (3, 'Tai nghe Z', 1500000.00, 1, 1), 
+(4, 'Màn hình 24"', 3500000.00, 1, 1), (5, 'Bàn phím cơ', 1200000.00, 1, 1), (6, 'Chuột không dây', 500000.00, 1, 1),
+(7, 'Áo thun nam', 200000.00, 2, 2), (8, 'Quần jean', 450000.00, 2, 2), (9, 'Áo khoác', 350000.00, 2, 2), 
+(10, 'Váy nữ', 550000.00, 2, 2), (11, 'Giày Sneaker', 850000.00, 2, 2), (12, 'Tất nam', 50000.00, 2, 2),
+(13, 'Nồi cơm điện', 1200000.00, 3, 3), (14, 'Máy xay', 850000.00, 3, 3), (15, 'Lò vi sóng', 2100000.00, 3, 3), 
+(16, 'Bếp từ', 4500000.00, 3, 3), (17, 'Máy lọc bụi', 3200000.00, 3, 3), (18, 'Quạt điện', 750000.00, 3, 3),
+(19, 'Vợt tennis', 1500000.00, 4, 4), (20, 'Bóng đá', 300000.00, 4, 4), (21, 'Thảm Yoga', 250000.00, 4, 4), 
+(22, 'Kính bơi', 150000.00, 4, 4), (23, 'Tạ 5kg', 200000.00, 4, 4), (24, 'Balo chéo', 450000.00, 4, 4),
+(25, 'Đắc Nhân Tâm', 85000.00, 5, 5), (26, 'Clean Code', 250000.00, 5, 5), (27, 'Lịch sử TG', 150000.00, 5, 5), 
+(28, 'Trinh thám', 120000.00, 5, 5), (29, 'Sách kinh tế', 95000.00, 5, 5), (30, 'Từ điển', 180000.00, 5, 5);
+
+-- 7. Thêm 100 đơn hàng (orders)
+INSERT INTO orders (order_id, customer_id, employee_id, promo_id, order_date) VALUES
+(1, 1, 1, 1, '2023-10-01'), (2, 2, 2, 2, '2023-10-01'), (3, 3, 3, 3, '2023-10-02'), (4, 4, 4, 1, '2023-10-02'), (5, 5, 5, 2, '2023-10-03'),
+(6, 6, 6, 3, '2023-10-03'), (7, 7, 7, 1, '2023-10-04'), (8, 8, 8, 2, '2023-10-04'), (9, 9, 9, 3, '2023-10-05'), (10, 10, 10, 1, '2023-10-05'),
+(11, 11, 1, 2, '2023-10-06'), (12, 12, 2, 3, '2023-10-06'), (13, 13, 3, 1, '2023-10-07'), (14, 14, 4, 2, '2023-10-07'), (15, 15, 5, 3, '2023-10-08'),
+(16, 16, 6, 1, '2023-10-08'), (17, 17, 7, 2, '2023-10-09'), (18, 18, 8, 3, '2023-10-09'), (19, 19, 9, 1, '2023-10-10'), (20, 20, 10, 2, '2023-10-10'),
+(21, 21, 1, 3, '2023-10-11'), (22, 22, 2, 1, '2023-10-11'), (23, 23, 3, 2, '2023-10-12'), (24, 24, 4, 3, '2023-10-12'), (25, 25, 5, 1, '2023-10-13'),
+(26, 26, 6, 2, '2023-10-13'), (27, 27, 7, 3, '2023-10-14'), (28, 28, 8, 1, '2023-10-14'), (29, 29, 9, 2, '2023-10-15'), (30, 30, 10, 3, '2023-10-15'),
+(31, 31, 1, 1, '2023-10-16'), (32, 32, 2, 2, '2023-10-16'), (33, 33, 3, 3, '2023-10-17'), (34, 34, 4, 1, '2023-10-17'), (35, 35, 5, 2, '2023-10-18'),
+(36, 36, 6, 3, '2023-10-18'), (37, 37, 7, 1, '2023-10-19'), (38, 38, 8, 2, '2023-10-19'), (39, 39, 9, 3, '2023-10-20'), (40, 40, 10, 1, '2023-10-20'),
+(41, 41, 1, 2, '2023-10-21'), (42, 42, 2, 3, '2023-10-21'), (43, 43, 3, 1, '2023-10-22'), (44, 44, 4, 2, '2023-10-22'), (45, 45, 5, 3, '2023-10-23'),
+(46, 46, 6, 1, '2023-10-23'), (47, 47, 7, 2, '2023-10-24'), (48, 48, 8, 3, '2023-10-24'), (49, 49, 9, 1, '2023-10-25'), (50, 50, 10, 2, '2023-10-25'),
+(51, 1, 1, 3, '2023-10-26'), (52, 2, 2, 1, '2023-10-26'), (53, 3, 3, 2, '2023-10-27'), (54, 4, 4, 3, '2023-10-27'), (55, 5, 5, 1, '2023-10-28'),
+(56, 6, 6, 2, '2023-10-28'), (57, 7, 7, 3, '2023-10-29'), (58, 8, 8, 1, '2023-10-29'), (59, 9, 9, 2, '2023-10-30'), (60, 10, 10, 3, '2023-10-30'),
+(61, 11, 1, 1, '2023-10-31'), (62, 12, 2, 2, '2023-10-31'), (63, 13, 3, 3, '2023-11-01'), (64, 14, 4, 1, '2023-11-01'), (65, 15, 5, 2, '2023-11-02'),
+(66, 16, 6, 3, '2023-11-02'), (67, 17, 7, 1, '2023-11-03'), (68, 18, 8, 2, '2023-11-03'), (69, 19, 9, 3, '2023-11-04'), (70, 20, 10, 1, '2023-11-04'),
+(71, 21, 1, 2, '2023-11-05'), (72, 22, 2, 3, '2023-11-05'), (73, 23, 3, 1, '2023-11-06'), (74, 24, 4, 2, '2023-11-06'), (75, 25, 5, 3, '2023-11-07'),
+(76, 26, 6, 1, '2023-11-07'), (77, 27, 7, 2, '2023-11-08'), (78, 28, 8, 3, '2023-11-08'), (79, 29, 9, 1, '2023-11-09'), (80, 30, 10, 2, '2023-11-09'),
+(81, 31, 1, 3, '2023-11-10'), (82, 32, 2, 1, '2023-11-10'), (83, 33, 3, 2, '2023-11-11'), (84, 34, 4, 3, '2023-11-11'), (85, 35, 5, 1, '2023-11-12'),
+(86, 36, 6, 2, '2023-11-12'), (87, 37, 7, 3, '2023-11-13'), (88, 38, 8, 1, '2023-11-13'), (89, 39, 9, 2, '2023-11-14'), (90, 40, 10, 3, '2023-11-14'),
+(91, 41, 1, 1, '2023-11-15'), (92, 42, 2, 2, '2023-11-15'), (93, 43, 3, 3, '2023-11-16'), (94, 44, 4, 1, '2023-11-16'), (95, 45, 5, 2, '2023-11-17'),
+(96, 46, 6, 3, '2023-11-17'), (97, 47, 7, 1, '2023-11-18'), (98, 48, 8, 2, '2023-11-18'), (99, 49, 9, 3, '2023-11-19'), (100, 50, 10, 1, '2023-11-19');
+
+-- 8. Thêm 100 chi tiết đơn hàng (order_items) - 
+INSERT INTO order_items (order_item_id, order_id, product_id, quantity, price_at_purchase) VALUES
+(1, 1, 1, 2, 15000000.00), (2, 2, 2, 1, 25000000.00), (3, 3, 3, 3, 1500000.00), (4, 4, 4, 1, 3500000.00), (5, 5, 5, 2, 1200000.00),
+(6, 6, 6, 1, 500000.00), (7, 7, 7, 4, 200000.00), (8, 8, 8, 2, 450000.00), (9, 9, 9, 1, 350000.00), (10, 10, 10, 2, 550000.00),
+(11, 11, 11, 1, 850000.00), (12, 12, 12, 5, 50000.00), (13, 13, 13, 1, 1200000.00), (14, 14, 14, 2, 850000.00), (15, 15, 15, 1, 2100000.00),
+(16, 16, 16, 1, 4500000.00), (17, 17, 17, 1, 3200000.00), (18, 18, 18, 3, 750000.00), (19, 19, 19, 2, 1500000.00), (20, 20, 20, 1, 300000.00),
+(21, 21, 21, 2, 250000.00), (22, 22, 22, 1, 150000.00), (23, 23, 23, 4, 200000.00), (24, 24, 24, 1, 450000.00), (25, 25, 25, 2, 85000.00),
+(26, 26, 26, 1, 250000.00), (27, 27, 27, 3, 150000.00), (28, 28, 28, 1, 120000.00), (29, 29, 29, 2, 95000.00), (30, 30, 30, 1, 180000.00),
+(31, 31, 1, 1, 15000000.00), (32, 32, 2, 2, 25000000.00), (33, 33, 3, 1, 1500000.00), (34, 34, 4, 3, 3500000.00), (35, 35, 5, 1, 1200000.00),
+(36, 36, 6, 2, 500000.00), (37, 37, 7, 1, 200000.00), (38, 38, 8, 4, 450000.00), (39, 39, 9, 2, 350000.00), (40, 40, 10, 1, 550000.00),
+(41, 41, 11, 2, 850000.00), (42, 42, 12, 1, 50000.00), (43, 43, 13, 5, 1200000.00), (44, 44, 14, 1, 850000.00), (45, 45, 15, 2, 2100000.00),
+(46, 46, 16, 1, 4500000.00), (47, 47, 17, 1, 3200000.00), (48, 48, 18, 1, 750000.00), (49, 49, 19, 3, 1500000.00), (50, 50, 20, 2, 300000.00),
+(51, 51, 21, 1, 250000.00), (52, 52, 22, 2, 150000.00), (53, 53, 23, 1, 200000.00), (54, 54, 24, 4, 450000.00), (55, 55, 25, 1, 85000.00),
+(56, 56, 26, 2, 250000.00), (57, 57, 27, 1, 150000.00), (58, 58, 28, 3, 120000.00), (59, 59, 29, 1, 95000.00), (60, 60, 30, 2, 180000.00),
+(61, 61, 1, 1, 15000000.00), (62, 62, 2, 1, 25000000.00), (63, 63, 3, 2, 1500000.00), (64, 64, 4, 1, 3500000.00), (65, 65, 5, 3, 1200000.00),
+(66, 66, 6, 1, 500000.00), (67, 67, 7, 2, 200000.00), (68, 68, 8, 1, 450000.00), (69, 69, 9, 4, 350000.00), (70, 70, 10, 2, 550000.00),
+(71, 71, 11, 1, 850000.00), (72, 72, 12, 2, 50000.00), (73, 73, 13, 1, 1200000.00), (74, 74, 14, 5, 850000.00), (75, 75, 15, 1, 2100000.00),
+(76, 76, 16, 2, 4500000.00), (77, 77, 17, 1, 3200000.00), (78, 78, 18, 1, 750000.00), (79, 79, 19, 1, 1500000.00), (80, 80, 20, 3, 300000.00),
+(81, 81, 21, 2, 250000.00), (82, 82, 22, 1, 150000.00), (83, 83, 23, 2, 200000.00), (84, 84, 24, 1, 450000.00), (85, 85, 25, 4, 85000.00),
+(86, 86, 26, 1, 250000.00), (87, 87, 27, 2, 150000.00), (88, 88, 28, 1, 120000.00), (89, 89, 29, 3, 95000.00), (90, 90, 30, 1, 180000.00),
+(91, 91, 1, 2, 15000000.00), (92, 92, 2, 1, 25000000.00), (93, 93, 3, 1, 1500000.00), (94, 94, 4, 2, 3500000.00), (95, 95, 5, 1, 1200000.00),
+(96, 96, 6, 3, 500000.00), (97, 97, 7, 1, 200000.00), (98, 98, 8, 2, 450000.00), (99, 99, 9, 1, 350000.00), (100, 100, 10, 4, 550000.00);
+
+-- Truy Vấn
+SELECT 
+	   o.order_id AS "MÃ ĐƠN HÀNG",
+       c.customer_name AS "TÊN KHÁCH HÀNG",
+	   e.employee_name AS "TÊN NHÂN VIÊN",
+	   o.order_date AS "NGÀY MUA",
+	   sum(oi.quantity * oi.price_at_purchase) AS "TỔNG TIỀN"
+	   From orders o
+	   Join customers c on o.customer_id = c.customer_id
+	   Join employees e on o.employee_id = e.employee_id
+	   Join order_items oi on o.order_id = oi.order_id
+group by o.order_id,
+	c.customer_name,
+	e.employee_name,
+	o.order_date
+order by "TỔNG TIỀN" DESC
+limit 10;
+       
+SELECT pc.category_name AS "TÊN DANH MỤC",
+	   SUM(oi.quantity * oi.price_at_purchase) AS " TỔNG DOANH THU"
+FROM product_categories pc
+join products p on pc.category_id = p.product_id
+join order_items oi on p.product_id = oi.product_id
+GROUP BY pc.category_name
+HAVING SUM ( oi.quantity * oi.price_at_purchase) > 1000000
+ORDER BY " TỔNG DOANH THU" DESC;
+
+SELECT product_name AS "TÊN SẢN PHẨM",price AS " GIÁ BÁN " 
+FROM products
+where supplier_id =(
+	select supplier_id
+	FROM suppliers
+	where supplier_name = 'TechVN'
+); 
+
+SELECT e.employee_id,	
+	e.employee_name AS " TÊN NHÂN VIÊN ",
+	sum(oi.quantity * oi.price_at_purchase) AS " TỔNG DOANH THU ",
+	DENSE_RANK() OVER (ORDER BY SUM(oi.quantity * oi.price_at_purchase) DESC) AS "THỨ HẠNG"
+	from employees e
+	join orders o ON e.employee_id = o.employee_id
+	join order_items oi On o.order_id = oi.order_id
+	where o.order_date <= '2023-10-31' AND o.order_date >= '2023-10-31'
+	group by e.employee_id,e.employee_name
+	ORDER BY "THỨ HẠNG" ASC;
+
+
+	-- Chèn 50,000 khách hàng ảo
+SELECT setval(pg_get_serial_sequence('customers', 'customer_id'), (SELECT MAX(customer_id) FROM customers));
+INSERT INTO customers (customer_name, phone, email, address)
+SELECT 
+    'Virtual Customer ' || i, 
+    '03' || LPAD(i::text, 8, '0'), 
+    'virtual_' || i || '@example.com',
+    'Address ' || i
+FROM generate_series(100, 50099) AS i;
+CREATE INDEX idx_customers_email ON customers(email);
+EXPLAIN ANALYZE 
+SELECT * FROM customers 
+WHERE email = 'user49999@example.com';
+	

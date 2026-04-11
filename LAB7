@@ -1,0 +1,88 @@
+-- ==========================================
+-- PHẦN 1: KHỞI TẠO BẢNG VÀ DỮ LIỆU (TỪ LAB 2)
+-- ==========================================
+
+DROP TABLE IF EXISTS Invoice_Detail CASCADE;
+DROP TABLE IF EXISTS Invoice CASCADE;
+DROP TABLE IF EXISTS Product CASCADE;
+DROP TABLE IF EXISTS Customer CASCADE;
+CREATE TABLE Customer (
+    customer_id INT PRIMARY KEY,
+    customer_name VARCHAR(255),
+    phone VARCHAR(15),
+    address VARCHAR(255)
+);
+
+INSERT INTO Customer (customer_id, customer_name, phone, address) 
+VALUES
+(1, 'Nguyen Van A', '0901234567', 'Ha Noi'),
+(2, 'Tran Thi B', 'abcd345678', 'Bac Ninh'),
+(3, NULL, '0923456789', 'Da Nang');
+
+
+CREATE TABLE Product (
+    product_id INT PRIMARY KEY,
+    product_name VARCHAR(255),
+    price DECIMAL(10,2)
+);
+
+INSERT INTO Product (product_id, product_name, price) 
+VALUES
+(101, 'Sua tuoi', -30000),
+(102, 'Banh mi', 15000),
+(103, 'oreo', Null);
+
+
+CREATE TABLE Invoice (
+    invoice_id INT PRIMARY KEY,
+    created_date TIMESTAMP,
+    customer_id INT,
+    total_amount DECIMAL(10,2),
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
+);
+
+INSERT INTO Invoice (invoice_id, created_date, customer_id, total_amount) 
+VALUES
+(1001, '2026-03-01 10:00:00', 1, 60000);
+
+
+
+CREATE TABLE Invoice_Detail (
+    invoice_id INT,
+    product_id INT,
+    quantity INT,
+    unit_price DECIMAL(10,2),
+    PRIMARY KEY (invoice_id, product_id),
+    FOREIGN KEY (invoice_id) REFERENCES Invoice(invoice_id),
+    FOREIGN KEY (product_id) REFERENCES Product(product_id)
+);
+
+INSERT INTO Invoice_Detail (invoice_id, product_id, quantity, unit_price) 
+VALUES
+(1001, 101, 1, 30000),
+(1001, 102, -2, 15000);
+
+-- BÀI 1: Phân tích Seq Scan khi chưa có Index
+EXPLAIN ANALYZE
+SELECT * FROM Customer WHERE phone = '0901234567';
+
+
+-- BÀI 2: Tạo Index trên cột phone và phân tích Index Scan
+CREATE INDEX customer_id ON Customer(phone);
+
+EXPLAIN ANALYZE
+SELECT * FROM Customer WHERE phone = '0901234567';
+
+
+-- BÀI 3: Ảnh hưởng của Index đến lệnh INSERT
+EXPLAIN ANALYZE
+INSERT INTO Customer (customer_id, customer_name, phone, address) 
+VALUES (4, 'Test Index User', '0999999999', '123 Test Index');
+
+
+-- BÀI 4: Hiểu về Bitmap Scan khi có nhiều điều kiện
+CREATE INDEX idx_customer_address ON Customer(address);
+
+EXPLAIN
+SELECT * FROM Customer 
+WHERE address = 'Ha Noi' OR phone LIKE '0901%';

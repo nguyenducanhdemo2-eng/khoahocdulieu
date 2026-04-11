@@ -1,0 +1,47 @@
+
+-- BÀI TẬP THỰC HÀNH LAB 6: TRUY VẤN NÂNG CAO 
+-- CSDL: Siêu thị Mini "An Bình Mart" [cite: 12]
+
+-- PHẦN I [cite: 20]
+
+SELECT 
+    COUNT(*) AS "SoLuongSanPham", 
+    AVG(price) AS "GiaTrungBinh", 
+    MIN(price) AS "GiaReNhat", 
+    MAX(price) AS "GiaDatNhat" 
+FROM products;
+
+-- Bài 2 (2.5 điểm): Phân tích nhà cung cấp [cite: 35]
+
+SELECT 
+    s.supplier_name AS "TenNhaCungCap",
+    COUNT(p.product_id) AS "TongSoSanPham"
+FROM suppliers s
+JOIN products p ON s.supplier_id = p.supplier_id
+GROUP BY s.supplier_name
+HAVING COUNT(p.product_id) > 1;
+
+
+-- PHẦN II [cite: 45]
+
+
+-- Bài 3 (2.5 điểm): Xử lý và định dạng ngày đặt hàng [cite: 48]
+
+SELECT 
+    order_id AS "MaDonHang",
+    TO_CHAR(order_date, 'DD/MM/YYYY') AS "NgayDatHang"
+FROM orders
+WHERE EXTRACT(MONTH FROM order_date) = 10 
+  AND EXTRACT(YEAR FROM order_date) = 2025;
+
+-- Bài 4 (2.5 điểm): Báo cáo doanh thu theo khách hàng [cite: 58]
+
+SELECT 
+    c.full_name AS "TenKhachHang", 
+    SUM(oi.quantity * oi.price) AS "TongChiTieu"
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id
+JOIN order_items oi ON o.order_id = oi.order_id
+GROUP BY c.full_name
+HAVING SUM(oi.quantity * oi.price) > 100000
+ORDER BY "TongChiTieu" DESC;
